@@ -9,7 +9,7 @@
     "lint": "ng lint",
     "e2e": "ng e2e",
     "semantic-release": "semantic-release",
-    "build:all": "ng build forms && ng build show-form-control && ng build"
+    "build:all": "ng build show-form-control && ng build"
   },
   "private": true,
   "dependencies": {
@@ -57,7 +57,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/gparlakov/forms-typed.git"
+    "url": "https://github.com/gparlakov/show-form-control.git"
   },
   "husky": {
     "hooks": {

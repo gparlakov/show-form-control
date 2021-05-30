@@ -1,4 +1,7 @@
+
 # ShowFormControl
+
+[![Tests](https://github.com/gparlakov/show-form-control/actions/workflows/test-forms-typed.yml/badge.svg)](https://github.com/gparlakov/show-form-control/actions/workflows/test-forms-typed.yml) [![Release](https://github.com/gparlakov/show-form-control/actions/workflows/release-show-form-control.yml/badge.svg)](https://github.com/gparlakov/show-form-control/actions/workflows/release-show-form-control.yml) [![semantic-release](https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--release-e10079.svg)](https://github.com/semantic-release/semantic-release)
 
 This is a component that visualizes an `AbstractControl` instance - `FormControl`, `FormGroup`, `FormArray`.
 Visualization looks like this

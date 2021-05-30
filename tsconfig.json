@@ -29,7 +29,6 @@
         "node_modules/ngx-forms-typed"
       ],
       "show-form-control": [
-        "dist/show-form-control/show-form-control",
         "dist/show-form-control"
       ]
     }

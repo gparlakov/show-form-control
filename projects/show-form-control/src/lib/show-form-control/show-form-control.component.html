@@ -6,11 +6,11 @@
     <button (click)="onToggle()">{{ closed ? '\u2752' : '\u2581' }}</button>
   </div>
   <span [class.hidden]="closed">
-    <span *ngIf="control?.touched" style="color: blue">touched</span>
-    <span *ngIf="control?.untouched" style="color: rgb(21, 88, 21">untouched</span>
+    <span *ngIf="control?.touched" (click)="onStatusFlip('touched')" class="status-btn" style="color: blue">touched</span>
+    <span *ngIf="control?.untouched" (click)="onStatusFlip('untouched')" class="status-btn" style="color: rgb(21, 88, 21)">untouched</span>
     &nbsp;
-    <span *ngIf="control?.dirty" style="color: magenta">dirty</span>
-    <span *ngIf="control?.pristine" style="color: black">pristine</span>
+    <span *ngIf="control?.dirty" (click)="onStatusFlip('dirty')" class="status-btn" style="color: magenta">dirty</span>
+    <span *ngIf="control?.pristine" (click)="onStatusFlip('pristine')" class="status-btn" style="color: black">pristine</span>
     &nbsp;
     <span *ngIf="control?.valid" style="color: green">valid</span>
     <span *ngIf="control?.invalid" style="color: red">invalid</span>

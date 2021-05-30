@@ -1,6 +1,6 @@
-import { Component, OnInit, Input, HostListener, ElementRef, Optional, Inject, HostBinding } from '@angular/core';
+import { Component, ElementRef, HostBinding, HostListener, Inject, Input, OnInit, Optional } from '@angular/core';
 import { AbstractControl } from '@angular/forms';
-import { componentSelector, WindowWidthProvider, WindowAnimationFrameProvider, Disable } from './show-form-control';
+import { Disable, WindowAnimationFrameProvider, WindowWidthProvider } from './show-form-control';
 
 let count = 0;
 
@@ -11,7 +11,7 @@ let count = 0;
   styleUrls: ['./show-form-control.component.scss'],
 })
 export class ShowFormControlComponent implements OnInit {
-  private from: { x: number, y: number } | null = null;
+  private from: { x: number; y: number } | null = null;
 
   dragging?: boolean;
   width = 50;
@@ -62,7 +62,6 @@ export class ShowFormControlComponent implements OnInit {
       const rect = (this.host.nativeElement as HTMLElement).getBoundingClientRect();
       this.width = rect.width;
       this.height = rect.height;
-
 
       this.animationFrame.requestAnimationFrame(() => {
         const elem = (this.host.nativeElement as HTMLElement).getBoundingClientRect();
@@ -119,7 +118,6 @@ export class ShowFormControlComponent implements OnInit {
       const y = this.from.y - event.clientY;
       const x = this.from.x - event.clientX;
 
-
       (this.host.nativeElement as HTMLElement).style.right = 'unset';
       (this.host.nativeElement as HTMLElement).style.top = this.initial.top - y + 'px';
       (this.host.nativeElement as HTMLElement).style.left = this.initial.left - x + 'px';
@@ -137,4 +135,25 @@ export class ShowFormControlComponent implements OnInit {
       }
     }
   }
+
+  onStatusFlip(from: 'touched' | 'untouched' | 'dirty' | 'pristine') {
+    if (typeof this.control?.markAsDirty === 'function') {
+      switch (from) {
+        case 'touched':
+          return this.control.markAsUntouched();
+        case 'untouched':
+          return this.control.markAsTouched();
+        case 'dirty':
+          return this.control.markAsPristine();
+        case 'pristine':
+          return this.control.markAsDirty();
+        default:
+          return buildTimeErrorForUnknown(from);
+      }
+    }
+  }
+}
+
+function buildTimeErrorForUnknown(n: never): never {
+  throw new Error('Unknown value passed - please handle it!');
 }

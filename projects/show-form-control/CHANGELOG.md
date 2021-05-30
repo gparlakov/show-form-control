@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.4] - 2020-09-05
+### Fixed
+-   package home page and repo moved to new repo
 ### Added
 -   semantic-release for releasing automatically
 -   commitlint to make sure the commits follow the standard

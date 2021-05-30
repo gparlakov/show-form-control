@@ -1,18 +1,18 @@
 {
   "name": "ngx-show-form-control",
   "version": "1.0.3",
-  "repository": "https://github.com/gparlakov/forms-typed",
+  "repository": "https://github.com/gparlakov/show-form-control",
   "maintainers": [
     "gparlakov@gmail.com"
   ],
   "bugs": {
-    "url": "https://github.com/gparlakov/forms-typed",
+    "url": "https://github.com/gparlakov/show-form-control",
     "email": "gparlakov@gmail.com"
   },
   "author": {
     "name": "Georgi Parlakov"
   },
-  "homepage": "https://github.com/gparlakov/forms-typed/tree/master/projects/show-form-control#README",
+  "homepage": "https://github.com/gparlakov/show-form-control/tree/master/projects/show-form-control#README",
   "peerDependencies": {
     "@angular/common": ">=2.0.0",
     "@angular/core": ">=2.0.0"

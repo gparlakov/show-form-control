@@ -1,24 +1,46 @@
-import { Component, OnInit, Input, HostListener, ElementRef, Optional, Inject, HostBinding } from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  ElementRef,
+  HostBinding,
+  Inject,
+  Input,
+  OnInit,
+  Optional,
+  ViewChild,
+} from '@angular/core';
 import { AbstractControl } from '@angular/forms';
-import { componentSelector, WindowWidthProvider, WindowAnimationFrameProvider, Disable } from './show-form-control';
+import { fromEvent, Observer } from 'rxjs';
+import { HasEventTargetAddRemove } from 'rxjs/internal/observable/fromEvent';
+import { switchMap, takeUntil } from 'rxjs/operators';
+import { Disable, WindowAnimationFrameProvider, WindowWidthProvider } from './show-form-control';
 
 let count = 0;
-
+const MISSING_HOST = document.createElement('span');
 @Component({
   // tslint:disable-next-line:component-selector
   selector: 'show-form-control',
   templateUrl: './show-form-control.component.html',
   styleUrls: ['./show-form-control.component.scss'],
 })
-export class ShowFormControlComponent implements OnInit {
-  private from: { x: number, y: number } | null = null;
-
-  dragging?: boolean;
+export class ShowFormControlComponent implements OnInit, AfterViewInit {
   width = 50;
   height?: number;
 
   @HostBinding('class.enabled')
   enabled: boolean;
+
+  @ViewChild('hook', { static: true })
+  hook: ElementRef;
+  get host(): HTMLElement {
+    return (this.hook?.nativeElement as HTMLElement)?.parentElement ?? MISSING_HOST;
+  }
+
+  drag: (o: Observer<MouseEvent>) => void;
+
+  private animationFrame: WindowAnimationFrameProvider;
+  private w: WindowWidthProvider;
+  private window: HasEventTargetAddRemove<Event>;
 
   @Input()
   closed?: boolean;
@@ -29,58 +51,70 @@ export class ShowFormControlComponent implements OnInit {
 
   @Input()
   name = 'Drag here';
-  initial: DOMRect | null = null;
 
   constructor(
-    private host: ElementRef,
     @Inject(Disable) disabled: boolean,
-    @Optional() @Inject('AnimationFrameProvider') private animationFrame: WindowAnimationFrameProvider,
-    @Optional() @Inject('WINDOW') private w: WindowWidthProvider
+    @Optional() @Inject('WINDOW') animationFrame: WindowAnimationFrameProvider,
+    @Optional() @Inject('WINDOW') w: WindowWidthProvider,
+    @Optional() @Inject('WINDOW') globalWindow: HasEventTargetAddRemove<Event>
   ) {
     this.enabled = !Boolean(disabled);
-    this.animationFrame = this.animationFrame || window;
-    this.w = this.w || window;
-
-    if (this.enabled) {
-      this.offset = count;
-      if (count > 0) {
-        this.closed = true;
-      }
-      count += 1;
-    }
+    this.animationFrame = animationFrame || window;
+    this.w = w || window;
+    this.window = globalWindow || window;
   }
 
   ngOnInit() {
     if (this.enabled) {
+      if (this.enabled) {
+        this.offset = count;
+        if (count > 0) {
+          this.closed = true;
+        }
+        count += 1;
+      }
+    }
+  }
+
+  ngAfterViewInit() {
+    if (this.enabled) {
       this.calcWidthAfterRedraw();
       this.addOffsetAfterRedraw();
+    }
+
+    if (this.enabled) {
+      const mouseUp$ = fromEvent(this.window, 'mouseup');
+      const mouseMove$ = fromEvent(this.window, 'mousemove');
+
+      this.drag = (o: Observer<MouseEvent>) => {
+        mouseMove$.pipe(takeUntil(mouseUp$)).subscribe(o);
+      };
     }
   }
 
   private calcWidthAfterRedraw() {
     this.animationFrame.requestAnimationFrame(() => {
-      const rect = (this.host.nativeElement as HTMLElement).getBoundingClientRect();
+      const rect = this.host.getBoundingClientRect();
       this.width = rect.width;
       this.height = rect.height;
 
-
       this.animationFrame.requestAnimationFrame(() => {
-        const elem = (this.host.nativeElement as HTMLElement).getBoundingClientRect();
+        const elem = this.host.getBoundingClientRect();
 
         const windowWidth = this.w.innerWidth;
         const windowHeight = this.w.innerHeight;
 
         if (elem.x < 0) {
-          (this.host.nativeElement as HTMLElement).style.left = '0px';
+          this.host.style.left = '0px';
         }
         if (elem.x + elem.width > windowWidth) {
-          (this.host.nativeElement as HTMLElement).style.left = `${windowWidth - elem.width}px`;
+          this.host.style.left = `${windowWidth - elem.width}px`;
         }
         if (elem.y < 0) {
-          (this.host.nativeElement as HTMLElement).style.top = '0px';
+          this.host.style.top = '0px';
         }
         if (elem.y + elem.height > windowHeight) {
-          (this.host.nativeElement as HTMLElement).style.top = `${windowHeight - elem.height}px`;
+          this.host.style.top = `${windowHeight - elem.height}px`;
         }
       });
     });
@@ -88,8 +122,8 @@ export class ShowFormControlComponent implements OnInit {
 
   private addOffsetAfterRedraw() {
     this.animationFrame.requestAnimationFrame(() => {
-      (this.host.nativeElement as HTMLElement).style.top = `${this.offset}px`;
-      (this.host.nativeElement as HTMLElement).style.right = `${this.offset * 5}px`;
+      this.host.style.top = `${this.offset}px`;
+      this.host.style.right = `${this.offset * 5}px`;
     });
   }
 
@@ -100,29 +134,36 @@ export class ShowFormControlComponent implements OnInit {
 
   onDragStart(drag: MouseEvent | DragEvent) {
     drag.preventDefault();
-    this.dragging = true;
-    this.from = { x: drag.clientX, y: drag.clientY };
-    this.initial = (this.host.nativeElement as HTMLElement)?.getBoundingClientRect();
-  }
 
-  @HostListener('mouseup')
-  onDragEnd() {
-    if (this.enabled) {
-      this.dragging = false;
-      this.from = null;
+    const from = { x: drag.clientX, y: drag.clientY };
+    const initial = this.host?.getBoundingClientRect();
+    if (typeof this.drag === 'function') {
+      this.drag({
+        next: (m: MouseEvent) => {
+          this.onMouseMove(m, from, initial);
+        },
+        error: (e) => console.log(e),
+        complete: () => this.onDragEnd(),
+      });
     }
   }
 
-  @HostListener('window:mousemove', ['$event'])
-  onMouseMove(event: MouseEvent) {
-    if (this.enabled && this.from != null && this.initial != null) {
-      const y = this.from.y - event.clientY;
-      const x = this.from.x - event.clientX;
+  // @HostListener('mouseup')
+  onDragEnd() {
+    if (this.enabled) {
+      // this.dragging = false;
+      // this.from = null;
+    }
+  }
 
+  onMouseMove(event: MouseEvent, from: { x: number; y: number }, initial: DOMRect) {
+    if (from != null && initial != null) {
+      const y = from.y - event.clientY;
+      const x = from.x - event.clientX;
 
-      (this.host.nativeElement as HTMLElement).style.right = 'unset';
-      (this.host.nativeElement as HTMLElement).style.top = this.initial.top - y + 'px';
-      (this.host.nativeElement as HTMLElement).style.left = this.initial.left - x + 'px';
+      this.host.style.right = 'unset';
+      this.host.style.top = initial.top - y + 'px';
+      this.host.style.left = initial.left - x + 'px';
     }
   }
 

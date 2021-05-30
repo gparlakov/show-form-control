@@ -1,5 +1,5 @@
 <ng-container *ngIf="enabled">
-  <div class="drag-button" (mousedown)="onDragStart($event)">
+  <div class="drag-button" #drager (mousedown)="onDragStart($event)">
     {{ name }}
   </div>
   <div class="buttons">
@@ -19,6 +19,7 @@
   </span>
 
   <br [class.hidden]="closed" />
-  <textarea style="color: green" [class.hidden]="closed" [value]="control?.value | json" rows="20" cols="50"
+  <textarea style="color: green" [class.hidden]="closed" [value]="control?.value | json" rows="10" cols="30"
     (input)="onTextAreaInput($event)"></textarea>
 </ng-container>
+<span #hook></span>

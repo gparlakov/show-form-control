@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.0.4] - 2020-09-05
 ### Fixed
+-   Fixed `host: ElementRef` which was breaking the ngcc when compiling the module after import
 -   package home page and repo moved to new repo
 ### Added
 -   semantic-release for releasing automatically

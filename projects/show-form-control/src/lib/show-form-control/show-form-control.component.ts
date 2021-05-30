@@ -178,4 +178,25 @@ export class ShowFormControlComponent implements OnInit, AfterViewInit {
       }
     }
   }
+
+  onStatusFlip(from: 'touched' | 'untouched' | 'dirty' | 'pristine') {
+    if (typeof this.control?.markAsDirty === 'function') {
+      switch (from) {
+        case 'touched':
+          return this.control.markAsUntouched();
+        case 'untouched':
+          return this.control.markAsTouched();
+        case 'dirty':
+          return this.control.markAsPristine();
+        case 'pristine':
+          return this.control.markAsDirty();
+        default:
+          return buildTimeErrorForUnknown(from);
+      }
+    }
+  }
+}
+
+function buildTimeErrorForUnknown(n: never): never {
+  throw new Error('Unknown value passed - please handle it!');
 }
